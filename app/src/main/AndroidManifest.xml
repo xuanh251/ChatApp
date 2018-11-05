@@ -16,7 +16,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".DangNhapActivity"></activity>
+        <activity android:name=".DangNhapActivity" />
+        <activity android:name=".DangKyActivity" />
+        <activity android:name=".MainChatActivity" />
+        <activity android:name=".MessageActivity"></activity>
     </application>
 
 </manifest>
