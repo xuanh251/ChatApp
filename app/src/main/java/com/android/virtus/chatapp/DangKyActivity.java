@@ -87,8 +87,9 @@ public class DangKyActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
+                            String currentId = mAuth.getCurrentUser().getUid();
                             User user = new User(
-                                    name, email, "default", false
+                                    currentId, name, email, "default", "online"
                             );
                             FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                                     .setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {

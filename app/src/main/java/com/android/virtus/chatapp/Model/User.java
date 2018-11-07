@@ -1,16 +1,16 @@
 package com.android.virtus.chatapp.Model;
 
 public class User {
-    public String id, name, email, imageURL;
-    public Boolean online;
+    public String id, name, email, imageURL, status;
 
     public User() {
     }
 
-    public User(String name, String email, String imageURL, Boolean online) {
+    public User(String id, String name, String email, String imageURL, String status) {
+        this.id = id;
         this.name = name;
         this.email = email;
-        this.online = online;
+        this.status = status;
         this.imageURL = imageURL;
     }
 
@@ -46,11 +46,11 @@ public class User {
         this.imageURL = imageURL;
     }
 
-    public Boolean getOnline() {
-        return online;
+    public String getStatus() {
+        return status;
     }
 
-    public void setOnline(Boolean online) {
-        this.online = online;
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

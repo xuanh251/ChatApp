@@ -80,28 +80,22 @@ public class ChatsFragment extends Fragment {
                 try {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         User user = snapshot.getValue(User.class);
-                        String currentUserId = snapshot.getKey();
                         for (String id : usersList) {
-                            if (currentUserId.equals(id)) {
+                            if (user.getId().equals(id)) {
                                 if (mUser.size() != 0) {
-                                    for (User user1 : mUser) {
-
-                                        if (!currentUserId.equals(user1.getId())) {
-                                            user.setId(currentUserId);
-                                            mUser.add(user);
-                                        }
+                                    if (!mUser.contains(user)){
+                                        mUser.add(user);
                                     }
                                 } else {
-                                    user.setId(currentUserId);
                                     mUser.add(user);
                                 }
                             }
                         }
                     }
                 } catch (Exception ex) {
-                    
+
                 }
-                userAdapter = new UserAdapter(getContext(), mUser);
+                userAdapter = new UserAdapter(getContext(), mUser, true);
                 recyclerView.setAdapter(userAdapter);
             }
 
