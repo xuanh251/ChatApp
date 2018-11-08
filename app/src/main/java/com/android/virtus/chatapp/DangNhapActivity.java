@@ -25,6 +25,7 @@ public class DangNhapActivity extends AppCompatActivity {
     FirebaseAuth mAuth;
     FirebaseUser firebaseUser;
     ProgressBar pbLoading;
+    TextView forgot_pass;
 
     @Override
     protected void onStart() {
@@ -46,6 +47,13 @@ public class DangNhapActivity extends AppCompatActivity {
         editPasswordDN = (EditText) findViewById(R.id.editPasswordDN);
         btnDangKy = (Button) findViewById(R.id.btnDangKy);
         btnDangNhap = (Button) findViewById(R.id.btnDangNhap);
+        forgot_pass = findViewById(R.id.forget_pass);
+        forgot_pass.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(DangNhapActivity.this,ResetPassActivity.class));
+            }
+        });
         pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
         btnDangKy.setOnClickListener(new View.OnClickListener() {
             @Override

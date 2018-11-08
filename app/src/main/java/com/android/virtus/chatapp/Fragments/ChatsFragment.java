@@ -15,7 +15,9 @@ import android.widget.Toast;
 
 import com.android.virtus.chatapp.Adapter.UserAdapter;
 import com.android.virtus.chatapp.Model.Chat;
+import com.android.virtus.chatapp.Model.ChatList;
 import com.android.virtus.chatapp.Model.User;
+import com.android.virtus.chatapp.Notifications.Token;
 import com.android.virtus.chatapp.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -24,6 +26,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -36,7 +39,7 @@ public class ChatsFragment extends Fragment {
     private List<User> mUser;
     FirebaseUser fuser;
     DatabaseReference reference;
-    private List<String> usersList;
+    private List<ChatList> usersList;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -48,18 +51,16 @@ public class ChatsFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         fuser = FirebaseAuth.getInstance().getCurrentUser();
         usersList = new ArrayList<>();
-        reference = FirebaseDatabase.getInstance().getReference("Chats");
+        reference = FirebaseDatabase.getInstance().getReference("ChatList").child(fuser.getUid());
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 usersList.clear();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Chat chat = snapshot.getValue(Chat.class);
-                    //userlist là danh sách người gửi tn cho mình và ng mà mình gửi tn đi
-                    if (chat.getSender().equals(fuser.getUid())) usersList.add(chat.getReceiver());
-                    if (chat.getReceiver().equals(fuser.getUid())) usersList.add(chat.getSender());
+                    ChatList chatList = snapshot.getValue(ChatList.class);
+                    usersList.add(chatList);
                 }
-                ReadChat();
+                chatList();
             }
 
             @Override
@@ -67,33 +68,30 @@ public class ChatsFragment extends Fragment {
 
             }
         });
+        updateToken(FirebaseInstanceId.getInstance().getToken());
         return view;
     }
-
-    private void ReadChat() {
+    private void updateToken(String token) {
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Tokens");
+        Token token1 = new Token(token);
+        reference.child(fuser.getUid()).setValue(token1);
+    }
+    private void chatList() {
         mUser = new ArrayList<>();
         reference = FirebaseDatabase.getInstance().getReference("Users");
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 mUser.clear();
-                try {
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        User user = snapshot.getValue(User.class);
-                        for (String id : usersList) {
-                            if (user.getId().equals(id)) {
-                                if (mUser.size() != 0) {
-                                    if (!mUser.contains(user)){
-                                        mUser.add(user);
-                                    }
-                                } else {
-                                    mUser.add(user);
-                                }
-                            }
+                //duyệt qua các user trong bảng user
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    User user = snapshot.getValue(User.class);
+                    //duyệt qua các user khác user này đã nhắn, lưu trong chatlist
+                    for (ChatList chatList: usersList){
+                        if (user.getId().equals(chatList.getId())){
+                            mUser.add(user);
                         }
                     }
-                } catch (Exception ex) {
-
                 }
                 userAdapter = new UserAdapter(getContext(), mUser, true);
                 recyclerView.setAdapter(userAdapter);
@@ -105,4 +103,5 @@ public class ChatsFragment extends Fragment {
             }
         });
     }
+
 }
