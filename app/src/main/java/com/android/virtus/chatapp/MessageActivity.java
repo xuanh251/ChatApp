@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -15,14 +14,8 @@ import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
 
 import com.android.virtus.chatapp.Adapter.MessageAdapter;
-import com.android.virtus.chatapp.Fragments.APIService;
 import com.android.virtus.chatapp.Model.Chat;
 import com.android.virtus.chatapp.Model.User;
-import com.android.virtus.chatapp.Notifications.Client;
-import com.android.virtus.chatapp.Notifications.Data;
-import com.android.virtus.chatapp.Notifications.MyResponse;
-import com.android.virtus.chatapp.Notifications.Sender;
-import com.android.virtus.chatapp.Notifications.Token;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -33,7 +26,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,9 +48,7 @@ public class MessageActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     Intent intent;
     ValueEventListener seenListener;
-    String userid = "";
-    APIService apiService;
-    boolean notify = false;
+    String userid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +66,6 @@ public class MessageActivity extends AppCompatActivity {
             }
         });
 
-        apiService = Client.getClient("https://fcm.googleapis.com/").create(APIService.class);
 
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
@@ -117,7 +106,6 @@ public class MessageActivity extends AppCompatActivity {
         btn_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                notify = true;
                 String msg = text_send.getText().toString().trim();
                 if (!msg.isEmpty()) {
                     SendMessage(fuser.getUid(), userid, msg);
@@ -178,62 +166,9 @@ public class MessageActivity extends AppCompatActivity {
             }
         });
 
-        final String msg = message;
-
-        reference = FirebaseDatabase.getInstance().getReference("Users").child(fuser.getUid());
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-                if (notify) {
-                    sendNotification(receiver, user.getName(), msg);
-                }
-                notify = false;
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
     }
 
-    private void sendNotification(String receiver, final String username, final String message) {
-        DatabaseReference tokens = FirebaseDatabase.getInstance().getReference("Tokens");
-        Query query = tokens.orderByKey().equalTo(receiver);
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Token token = snapshot.getValue(Token.class);
-                    Data data = new Data(fuser.getUid(), R.mipmap.ic_launcher_round, username + ":" + message, "Bạn có tin nhắn mới", userid);
-                    Sender sender = new Sender(data, token.getToken());
-                    apiService.sendNotification(sender).enqueue(new Callback<MyResponse>() {
-                        @Override
-                        public void onResponse(Call<MyResponse> call, Response<MyResponse> response) {
-                            if (response.code() == 200) {
-                                if (response.body().success != 1) {
-                                    Toast.makeText(MessageActivity.this, "Lỗi!", Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        }
 
-                        @Override
-                        public void onFailure(Call<MyResponse> call, Throwable t) {
-
-                        }
-                    });
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
 
     private void readMessage(final String myid, final String userid, final String imageurl) {
         mChat = new ArrayList<>();

@@ -17,7 +17,6 @@ import com.android.virtus.chatapp.Adapter.UserAdapter;
 import com.android.virtus.chatapp.Model.Chat;
 import com.android.virtus.chatapp.Model.ChatList;
 import com.android.virtus.chatapp.Model.User;
-import com.android.virtus.chatapp.Notifications.Token;
 import com.android.virtus.chatapp.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -68,13 +67,7 @@ public class ChatsFragment extends Fragment {
 
             }
         });
-        updateToken(FirebaseInstanceId.getInstance().getToken());
         return view;
-    }
-    private void updateToken(String token) {
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Tokens");
-        Token token1 = new Token(token);
-        reference.child(fuser.getUid()).setValue(token1);
     }
     private void chatList() {
         mUser = new ArrayList<>();
@@ -103,5 +96,4 @@ public class ChatsFragment extends Fragment {
             }
         });
     }
-
 }
